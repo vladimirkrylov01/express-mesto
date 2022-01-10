@@ -1,4 +1,3 @@
-const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 
@@ -14,8 +13,6 @@ app.use((req, res, next) => {
 });
 
 const rootRouter = require('./routes');
-
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(express.json());
 app.use('/', rootRouter);

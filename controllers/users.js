@@ -4,14 +4,13 @@ const ConflictError = require('../utils/conflict-error')
 const NotFoundError = require('../utils/not-found-error')
 const ValidationError = require('../utils/validation-error')
 
-
-async function getAllUsers(req, res, next) {
+async function getAllUsers(req, res) {
 	try {
 		const users = await User.find({})
 		return res.status(HTTP_CODES.SUCCESS_CODE).json(users)
 	} catch (e) {
 		console.error(e.message)
-		return next(e)
+		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 }
 
@@ -29,12 +28,12 @@ async function getUserById(req, res, next) {
 		if (e.name === 'CastError') {
 			return next(new ValidationError(('Переданы некорректные данные')))
 		}
-		return next(e)
+		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 }
 
 async function createNewUser(req, res, next) {
-	const {name, about } = req.body
+	const {name, about} = req.body
 
 	try {
 		const newUser = await User.create({name, about})
@@ -50,7 +49,7 @@ async function createNewUser(req, res, next) {
 		if (e.name === 'MongoServerError' && e.code === 11000) {
 			return next(new ConflictError('Пользователь с таким email уже существует'))
 		}
-		return next(e)
+		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 }
 
@@ -75,25 +74,25 @@ async function updateProfile(req, res, next) {
 		if (e.name === 'CastError' || e.name === 'ValidationError') {
 			return next(new ValidationError(('Переданы некорректные данные')))
 		}
-		return next(e)
+		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 }
 
-async function updateAvatar(req,res,next){
-	const{_id} = req.user
-	const{avatar} = req.body
+async function updateAvatar(req, res, next) {
+	const {_id} = req.user
+	const {avatar} = req.body
 
-	try{
+	try {
 		const updatedAvatar = await User.findByIdAndUpdate(
 			_id,
 			{avatar},
 			{
-				runValidators:true,
-				new:true,
+				runValidators: true,
+				new: true,
 			}
 		).orFail()
 		return res.status(HTTP_CODES.SUCCESS_CODE).json(updatedAvatar)
-	}catch (e) {
+	} catch (e) {
 		console.error(e.message)
 		if (e.name === 'DocumentNotFound') {
 			return next(new NotFoundError('Пользователь не найден'))
@@ -101,7 +100,7 @@ async function updateAvatar(req,res,next){
 		if (e.name === 'CastError' || e.name === 'ValidationError') {
 			return next(new ValidationError(('Переданы некорректные данные')))
 		}
-		return next(e)
+		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 }
 

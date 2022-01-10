@@ -3,6 +3,7 @@ const HTTP_CODES = require('../utils/response.codes')
 const ForbiddenError = require('../utils/forbidden-error')
 const NotFoundError = require('../utils/not-found-error')
 const ValidationError = require('../utils/validation-error')
+const ServerError = require('../utils/server-error')
 
 async function getAllCards(req, res, next) {
 	try {
@@ -10,11 +11,12 @@ async function getAllCards(req, res, next) {
 		return res.status(HTTP_CODES.SUCCESS_CODE).json(cards)
 	} catch (e) {
 		console.error(e.message)
-		return next(e)
+		return next(new ServerError('Ошибка на сервере'))
 	}
+
 }
 
-async function createNewCard(req, res, next) {
+async function createNewCard(req, res) {
 	const {_id} = req.user
 	const {name, link} = req.body
 	try {
@@ -23,7 +25,7 @@ async function createNewCard(req, res, next) {
 		return res.status(HTTP_CODES.SUCCESS_CREATED_CODE).json(newCard)
 	} catch (e) {
 		console.error(e.message)
-		return next(e)
+		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 }
 
@@ -45,7 +47,7 @@ async function deleteCardById(req,res,next){
 		if(e.name === 'CastError'){
 			return next(new ValidationError('Переданы некорректные данные'))
 		}
-		return next(e)
+		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 }
 
@@ -67,7 +69,7 @@ async function likeCard(req,res,next){
 		if(e.name === 'CastError'){
 			return next(new ValidationError('Переданы некорректные данные'))
 		}
-		return next(e)
+		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 }
 
@@ -89,7 +91,7 @@ async function dislikeCard(req,res,next){
 		if(e.name === 'CastError'){
 			return next(new ValidationError('Переданы некорректные данные'))
 		}
-		return next(e)
+		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 }
 
