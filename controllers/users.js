@@ -1,8 +1,5 @@
 const User = require('../models/user');
 const HTTP_CODES = require('../utils/response.codes')
-const ConflictError = require('../utils/conflict-error')
-const NotFoundError = require('../utils/not-found-error')
-const ValidationError = require('../utils/validation-error')
 
 async function getAllUsers(req, res) {
 	try {
@@ -14,7 +11,7 @@ async function getAllUsers(req, res) {
 	}
 }
 
-async function getUserById(req, res, next) {
+async function getUserById(req, res) {
 	const {userId} = req.params
 
 	try {
@@ -23,16 +20,16 @@ async function getUserById(req, res, next) {
 	} catch (e) {
 		console.error(e.message)
 		if (e.name === 'DocumentNotFound') {
-			return next(new NotFoundError('Пользователь не найден'))
+			return res.status(HTTP_CODES.NOT_FOUND_ERROR_CODE).json('Пользователь не найден')
 		}
 		if (e.name === 'CastError') {
-			return next(new ValidationError(('Переданы некорректные данные')))
+			return res.status(HTTP_CODES.BAD_REQUEST_ERROR_CODE).json('Переданы некорректные данные')
 		}
 		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 }
 
-async function createNewUser(req, res, next) {
+async function createNewUser(req, res) {
 	const {name, about} = req.body
 
 	try {
@@ -44,16 +41,16 @@ async function createNewUser(req, res, next) {
 		})
 	} catch (e) {
 		if (e.name === 'CastError') {
-			return next(new ValidationError(('Переданы некорректные данные')))
+			return res.status(HTTP_CODES.BAD_REQUEST_ERROR_CODE).json(('Переданы некорректные данные'))
 		}
 		if (e.name === 'MongoServerError' && e.code === 11000) {
-			return next(new ConflictError('Пользователь с таким email уже существует'))
+			return res.status(HTTP_CODES.CONFLICT_ERROR_CODE).json('Пользователь с таким email уже существует')
 		}
 		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 }
 
-async function updateProfile(req, res, next) {
+async function updateProfile(req, res) {
 	const {_id} = req.user
 	const {name, about} = req.body
 
@@ -69,16 +66,16 @@ async function updateProfile(req, res, next) {
 	} catch (e) {
 		console.error(e.message)
 		if (e.name === 'DocumentNotFound') {
-			return next(new NotFoundError('Пользователь не найден'))
+			return res.status(HTTP_CODES.NOT_FOUND_ERROR_CODE).json('Пользователь не найден')
 		}
 		if (e.name === 'CastError' || e.name === 'ValidationError') {
-			return next(new ValidationError(('Переданы некорректные данные')))
+			return res.status(HTTP_CODES.BAD_REQUEST_ERROR_CODE).json(('Переданы некорректные данные'))
 		}
 		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 }
 
-async function updateAvatar(req, res, next) {
+async function updateAvatar(req, res) {
 	const {_id} = req.user
 	const {avatar} = req.body
 
@@ -95,10 +92,10 @@ async function updateAvatar(req, res, next) {
 	} catch (e) {
 		console.error(e.message)
 		if (e.name === 'DocumentNotFound') {
-			return next(new NotFoundError('Пользователь не найден'))
+			return res.status(HTTP_CODES.NOT_FOUND_ERROR_CODE).json('Пользователь не найден')
 		}
 		if (e.name === 'CastError' || e.name === 'ValidationError') {
-			return next(new ValidationError(('Переданы некорректные данные')))
+			return res.status(HTTP_CODES.BAD_REQUEST_ERROR_CODE).json(('Переданы некорректные данные'))
 		}
 		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}

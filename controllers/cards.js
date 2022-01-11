@@ -1,17 +1,13 @@
 const Card = require('../models/card');
 const HTTP_CODES = require('../utils/response.codes')
-const ForbiddenError = require('../utils/forbidden-error')
-const NotFoundError = require('../utils/not-found-error')
-const ValidationError = require('../utils/validation-error')
-const ServerError = require('../utils/server-error')
 
-async function getAllCards(req, res, next) {
+async function getAllCards(req, res) {
 	try {
 		const cards = await Card.find({}).populate('owner')
 		return res.status(HTTP_CODES.SUCCESS_CODE).json(cards)
 	} catch (e) {
 		console.error(e.message)
-		return next(new ServerError('Ошибка на сервере'))
+		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 
 }
@@ -29,29 +25,29 @@ async function createNewCard(req, res) {
 	}
 }
 
-async function deleteCardById(req,res,next){
+async function deleteCardById(req,res){
 	const {cardId} = req.params
 	const {_id:userId} = req.user
 	try{
 		const card = await Card.findById(cardId).orFail
 		if(!card.owner.equals(userId)){
-			return next(new ForbiddenError('Можно удалять только свои карточки'))
+			return res.status(HTTP_CODES.FORBIDDEN).json('Можно удалять только свои карточки')
 		}
 		const result = await Card.deleteOne({_id:cardId}).orFail()
 		return res.status(HTTP_CODES.SUCCESS_CODE).json(result)
 	} catch (e) {
 		console.error(e.message)
 		if(e.name === 'DocumentNotFoundError'){
-			return next(new NotFoundError('Карточка не найдена'))
+			return res.status(HTTP_CODES.NOT_FOUND_ERROR_CODE).json('Карточка не найдена')
 		}
 		if(e.name === 'CastError'){
-			return next(new ValidationError('Переданы некорректные данные'))
+			return res.status(HTTP_CODES.BAD_REQUEST_ERROR_CODE).json('Переданы некорректные данные')
 		}
 		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 }
 
-async function likeCard(req,res,next){
+async function likeCard(req,res){
 	const {cardId} = req.params
 	const{_id} = req.user
 	try{
@@ -64,16 +60,16 @@ async function likeCard(req,res,next){
 	} catch (e) {
 		console.error(e.message)
 		if(e.name === 'DocumentNotFoundError'){
-			return next(new NotFoundError('Карточка не найдена'))
+			return res.status(HTTP_CODES.NOT_FOUND_ERROR_CODE).json('Карточка не найдена')
 		}
 		if(e.name === 'CastError'){
-			return next(new ValidationError('Переданы некорректные данные'))
+			return res.status(HTTP_CODES.BAD_REQUEST_ERROR_CODE).json('Переданы некорректные данные')
 		}
 		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
 }
 
-async function dislikeCard(req,res,next){
+async function dislikeCard(req,res){
 	const {cardId} = req.params
 	const  {_id} = req.user
 	try{
@@ -86,10 +82,10 @@ async function dislikeCard(req,res,next){
 	} catch (e) {
 		console.error(e.message)
 		if(e.name === 'DocumentNotFoundError'){
-			return next(new NotFoundError('Карточка не найдена'))
+			return res.status(HTTP_CODES.NOT_FOUND_ERROR_CODE).json('Карточка не найдена')
 		}
 		if(e.name === 'CastError'){
-			return next(new ValidationError('Переданы некорректные данные'))
+			return res.status(HTTP_CODES.BAD_REQUEST_ERROR_CODE).json('Переданы некорректные данные')
 		}
 		return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере')
 	}
