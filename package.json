@@ -8,10 +8,10 @@
   },
   "devDependencies": {
     "eslint": "^7.32.0",
-    "eslint-config-airbnb": "^18.2.1",
     "eslint-config-airbnb-base": "^14.2.1",
-		"nodemon": "^2.0.12"
-	},
+    "eslint-plugin-import": "^2.25.4",
+    "nodemon": "^2.0.12"
+  },
   "dependencies": {
     "express": "^4.17.1",
     "mongoose": "^5.13.5",
