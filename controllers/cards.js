@@ -6,6 +6,7 @@ async function getAllCards(req, res) {
     const cards = await Card.find({}).populate('owner');
     return res.status(HTTP_CODES.SUCCESS_CODE).json(cards);
   } catch (e) {
+    console.error(e.message);
     return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере');
   }
 }

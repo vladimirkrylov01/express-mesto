@@ -40,6 +40,7 @@ async function createNewUser(req, res) {
       about: newUser.about,
     });
   } catch (e) {
+    console.error(e.message);
     if (e.name === 'CastError') {
       return res.status(HTTP_CODES.BAD_REQUEST_ERROR_CODE).json(('Переданы некорректные данные'));
     }
