@@ -27,7 +27,7 @@ async function deleteCardById(req, res) {
   const { cardId } = req.params;
   const { _id: userId } = req.user;
   try {
-    const card = await Card.findById(cardId).orFail;
+    const card = await Card.findById(cardId).orFail();
     if (!card.owner.equals(userId)) {
       return res.status(HTTP_CODES.FORBIDDEN).json('Можно удалять только свои карточки');
     }

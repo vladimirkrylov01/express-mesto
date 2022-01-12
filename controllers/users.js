@@ -19,7 +19,7 @@ async function getUserById(req, res) {
     return res.status(HTTP_CODES.SUCCESS_CODE).json(user);
   } catch (e) {
     console.error(e.message);
-    if (e.name === 'DocumentNotFound') {
+    if (e.name === 'DocumentNotFoundError') {
       return res.status(HTTP_CODES.NOT_FOUND_ERROR_CODE).json('Пользователь не найден');
     }
     if (e.name === 'CastError') {
@@ -46,6 +46,9 @@ async function createNewUser(req, res) {
     if (e.name === 'MongoServerError' && e.code === 11000) {
       return res.status(HTTP_CODES.CONFLICT_ERROR_CODE).json('Пользователь с таким email уже существует');
     }
+    if (e.name === 'ValidationError') {
+      return res.status(HTTP_CODES.BAD_REQUEST_ERROR_CODE).json(('Пользователь не создан'));
+    }
     return res.status(HTTP_CODES.SERVER_ERROR_CODE).json('Произошла ошибка на сервере');
   }
 }
@@ -66,7 +69,7 @@ async function updateProfile(req, res) {
     return res.status(HTTP_CODES.SUCCESS_CODE).json(updatedProfile);
   } catch (e) {
     console.error(e.message);
-    if (e.name === 'DocumentNotFound') {
+    if (e.name === 'DocumentNotFoundError') {
       return res.status(HTTP_CODES.NOT_FOUND_ERROR_CODE).json('Пользователь не найден');
     }
     if (e.name === 'CastError' || e.name === 'ValidationError') {
@@ -92,7 +95,7 @@ async function updateAvatar(req, res) {
     return res.status(HTTP_CODES.SUCCESS_CODE).json(updatedAvatar);
   } catch (e) {
     console.error(e.message);
-    if (e.name === 'DocumentNotFound') {
+    if (e.name === 'DocumentNotFoundError') {
       return res.status(HTTP_CODES.NOT_FOUND_ERROR_CODE).json('Пользователь не найден');
     }
     if (e.name === 'CastError' || e.name === 'ValidationError') {

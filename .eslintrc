@@ -7,11 +7,7 @@
 			"allow": ["_id"]
 		}
 	],
-		"consistent-return": "off",
-		"no-shadow": "off",
-		"no-else-return": "off",
-		"arrow-body-style": "off",
-		"no-unused-vars": "off",
+		// добавил 'no-console' т.к. без него npx eslint ругается на сonsole.error(e.message)
 		"no-console": "off"
 }
 }
