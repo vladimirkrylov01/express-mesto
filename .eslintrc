@@ -6,8 +6,6 @@
 		{
 			"allow": ["_id"]
 		}
-	],
-		// добавил 'no-console' т.к. без него npx eslint ругается на сonsole.error(e.message)
-		"no-console": "off"
+	]
 }
 }
