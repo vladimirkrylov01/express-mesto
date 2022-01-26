@@ -1,6 +1,10 @@
 const Card = require('../models/card');
 const HTTP_CODES = require('../utils/response.codes');
 
+const ForbiddenError = require('../errors/forbidden-error');
+const NotFoundError = require('../errors/not-found-error');
+const ValidationError = require('../errors/validation-error');
+
 async function getAllCards(req, res) {
   const { _id } = req.user;
   try {
@@ -15,7 +19,7 @@ async function getAllCards(req, res) {
   }
 }
 
-async function createNewCard(req, res) {
+async function createNewCard(req, res, next) {
   const { _id } = req.user;
   const { name, link } = req.body;
   try {
@@ -25,9 +29,7 @@ async function createNewCard(req, res) {
       .json(newCard);
   } catch (e) {
     if (e.name === 'CastError' || e.name === 'ValidationError') {
-      return res
-        .status(HTTP_CODES.BAD_REQUEST_ERROR_CODE)
-        .send({ message: 'Переданы некорректные данные.' });
+      return next(new ValidationError('Переданы некорректные данные'));
     }
     return res
       .status(HTTP_CODES.SERVER_ERROR_CODE)
@@ -35,15 +37,13 @@ async function createNewCard(req, res) {
   }
 }
 
-async function deleteCardById(req, res) {
+async function deleteCardById(req, res, next) {
   const { cardId } = req.params;
   const { _id: userId } = req.user;
   try {
     const card = await Card.findById(cardId).orFail();
     if (!card.owner.equals(userId)) {
-      return res
-        .status(HTTP_CODES.FORBIDDEN)
-        .send({ message: 'Можно удалять только свои карточки.' });
+      return next(new ForbiddenError('Можно удалять только свои карточки'));
     }
     const result = await Card.deleteOne({ _id: cardId }).orFail();
     return res
@@ -51,22 +51,16 @@ async function deleteCardById(req, res) {
       .json(result);
   } catch (e) {
     if (e.name === 'DocumentNotFoundError') {
-      return res
-        .status(HTTP_CODES.NOT_FOUND_ERROR_CODE)
-        .send({ message: 'Карточка не найдена.' });
+      return next(new NotFoundError('Карточка не найдена'));
     }
     if (e.name === 'CastError') {
-      return res
-        .status(HTTP_CODES.BAD_REQUEST_ERROR_CODE)
-        .send({ message: 'Переданы некорректные данные.' });
+      return next(new ValidationError('Переданы некорректные данные'));
     }
-    return res
-      .status(HTTP_CODES.SERVER_ERROR_CODE)
-      .send({ message: 'Ошибка сервера' });
+    return next(e);
   }
 }
 
-async function likeCard(req, res) {
+async function likeCard(req, res, next) {
   const { cardId } = req.params;
   const { _id } = req.user;
   try {
@@ -80,22 +74,16 @@ async function likeCard(req, res) {
       .json(updateCard);
   } catch (e) {
     if (e.name === 'DocumentNotFoundError') {
-      return res
-        .status(HTTP_CODES.NOT_FOUND_ERROR_CODE)
-        .send({ message: 'Карточка не найдена.' });
+      return next(new NotFoundError('Карточка не найдена'));
     }
     if (e.name === 'CastError') {
-      return res
-        .status(HTTP_CODES.BAD_REQUEST_ERROR_CODE)
-        .send({ message: 'Переданы некорректные данные.}' });
+      return next(new ValidationError('Переданы некорректные данные'));
     }
-    return res
-      .status(HTTP_CODES.SERVER_ERROR_CODE)
-      .send({ message: 'Ошибка сервера' });
+    return next(e);
   }
 }
 
-async function dislikeCard(req, res) {
+async function dislikeCard(req, res, next) {
   const { cardId } = req.params;
   const { _id } = req.user;
   try {
@@ -107,18 +95,12 @@ async function dislikeCard(req, res) {
     return res.status(HTTP_CODES.SUCCESS_CODE).json(updatedUser);
   } catch (e) {
     if (e.name === 'DocumentNotFoundError') {
-      return res
-        .status(HTTP_CODES.NOT_FOUND_ERROR_CODE)
-        .send({ message: 'Карточка не найдена.' });
+      return next(new NotFoundError('Карточка не найдена'));
     }
     if (e.name === 'CastError') {
-      return res
-        .status(HTTP_CODES.BAD_REQUEST_ERROR_CODE)
-        .send({ message: 'Переданы некорректные данные.' });
+      return next(new ValidationError('Переданы некорректные данные'));
     }
-    return res
-      .status(HTTP_CODES.SERVER_ERROR_CODE)
-      .send({ message: 'Ошибка сервера' });
+    return next(e);
   }
 }
 

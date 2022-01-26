@@ -3,21 +3,22 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const HTTP_CODES = require('../utils/response.codes');
 const TOKEN_SECRET = require('../utils/secret');
+const ConflictError = require('../errors/conflict-error');
+const NotFoundError = require('../errors/not-found-error');
+const ValidationError = require('../errors/validation-error');
 
-async function getAllUsers(req, res) {
+async function getAllUsers(req, res, next) {
   try {
     const users = await User.find({});
     return res
       .status(HTTP_CODES.SUCCESS_CODE)
       .json(users);
   } catch (e) {
-    return res
-      .status(HTTP_CODES.SERVER_ERROR_CODE)
-      .send({ message: 'Ошибка сервера' });
+    return next(e);
   }
 }
 
-async function getUserById(req, res) {
+async function getUserById(req, res, next) {
   const { userId } = req.params;
 
   try {
@@ -27,22 +28,17 @@ async function getUserById(req, res) {
       .json(user);
   } catch (e) {
     if (e.name === 'DocumentNotFoundError') {
-      return res
-        .status(HTTP_CODES.NOT_FOUND_ERROR_CODE)
-        .send({ message: 'Пользователь не найден' });
+      return next(new NotFoundError(`Пользователь c ${userId} не найден`));
     }
     if (e.name === 'CastError') {
-      return res
-        .status(HTTP_CODES.BAD_REQUEST_ERROR_CODE)
-        .send({ message: 'Переданы некорректные данные.' });
+      return next(new ValidationError('Переданы некорректные данные'));
     }
-    return res
-      .status(HTTP_CODES.SERVER_ERROR_CODE)
-      .send({ message: 'Ошибка сервера' });
+
+    return next(e);
   }
 }
 
-async function createNewUser(req, res) {
+async function createNewUser(req, res, next) {
   const {
     name, about, avatar, password, email,
   } = req.body;
@@ -64,22 +60,16 @@ async function createNewUser(req, res) {
       });
   } catch (e) {
     if (e.name === 'MongoServerError' && e.code === 11000) {
-      return res
-        .status(HTTP_CODES.CONFLICT_ERROR_CODE)
-        .send({ message: 'Пользователь с таким email уже существует.' });
+      return next(new ConflictError('Пользователь с таким email уже существует'));
     }
     if (e.name === 'CastError' || e.name === 'ValidationError') {
-      return res
-        .status(HTTP_CODES.BAD_REQUEST_ERROR_CODE)
-        .send({ message: 'Переданы некорректные данные.' });
+      return next(new ValidationError('Переданы некорректные данные'));
     }
-    return res
-      .status(HTTP_CODES.SERVER_ERROR_CODE)
-      .send({ message: 'Ошибка сервера' });
+    return next(e);
   }
 }
 
-async function updateProfile(req, res) {
+async function updateProfile(req, res, next) {
   const { _id } = req.user;
   const { name, about } = req.body;
 
@@ -95,22 +85,18 @@ async function updateProfile(req, res) {
     return res.status(HTTP_CODES.SUCCESS_CODE).json(updatedProfile);
   } catch (e) {
     if (e.name === 'DocumentNotFoundError') {
-      return res
-        .status(HTTP_CODES.NOT_FOUND_ERROR_CODE)
-        .send({ message: 'Переданы некорректные данные при обновлении профиля.' });
+      return next(new NotFoundError('Пользователь не найден'));
     }
+
     if (e.name === 'CastError' || e.name === 'ValidationError') {
-      return res
-        .status(HTTP_CODES.BAD_REQUEST_ERROR_CODE)
-        .send({ message: 'Запрашиваемый пользователь не найден.' });
+      return next(new ValidationError('Переданы некорректные данные'));
     }
-    return res
-      .status(HTTP_CODES.SERVER_ERROR_CODE)
-      .send({ message: 'Ошибка сервера' });
+
+    return next(e);
   }
 }
 
-async function updateAvatar(req, res) {
+async function updateAvatar(req, res, next) {
   const { _id } = req.user;
   const { avatar } = req.body;
 
@@ -128,18 +114,14 @@ async function updateAvatar(req, res) {
       .json(updatedAvatar);
   } catch (e) {
     if (e.name === 'DocumentNotFoundError') {
-      return res
-        .status(HTTP_CODES.NOT_FOUND_ERROR_CODE)
-        .send({ message: 'Переданы некорректные данные при обновлении аватара профиля.' });
+      return next(new NotFoundError('Пользователь не найден'));
     }
+
     if (e.name === 'CastError' || e.name === 'ValidationError') {
-      return res
-        .status(HTTP_CODES.BAD_REQUEST_ERROR_CODE)
-        .send({ message: 'Запрашиваемый пользователь не найден.}' });
+      return next(new ValidationError('Переданы некорректные данные'));
     }
-    return res
-      .status(HTTP_CODES.SERVER_ERROR_CODE)
-      .send({ message: 'Ошибка сервера' });
+
+    return next(e);
   }
 }
 
@@ -183,11 +165,8 @@ async function login(req, res, next) {
       });
   } catch (e) {
     if (e.name === 'ValidationError') {
-      return res
-        .status(HTTP_CODES.BAD_REQUEST_ERROR_CODE)
-        .send({ mesage: 'Переданы некорректные данные' });
+      return next(new ValidationError('Переданы некорректные данные'));
     }
-
     return next(e);
   }
 }
