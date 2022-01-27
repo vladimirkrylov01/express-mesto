@@ -18,6 +18,24 @@ async function getAllUsers(req, res, next) {
   }
 }
 
+async function getCurrentUser(req, res, next) {
+  const { _id } = req.user;
+  try {
+    const user = await User.findById(_id).orFail();
+
+    return res.status(HTTP_CODES.SUCCESS_CODE).json(user);
+  } catch (e) {
+    if (e.name === 'DocumentNotFoundError') {
+      return next(new NotFoundError('Пользователь не найден'));
+    }
+    if (e.name === 'CastError') {
+      return next(new ValidationError('Переданы некорректные данные'));
+    }
+
+    return next(e);
+  }
+}
+
 async function getUserById(req, res, next) {
   const { userId } = req.params;
 
@@ -59,7 +77,7 @@ async function createNewUser(req, res, next) {
         avatar: newUser.avatar,
       });
   } catch (e) {
-    if (e.name === 'MongoServerError' && e.code === 11000) {
+    if (e.code === 11000) {
       return next(new ConflictError('Пользователь с таким email уже существует'));
     }
     if (e.name === 'CastError' || e.name === 'ValidationError') {
@@ -130,17 +148,13 @@ async function login(req, res, next) {
   try {
     const matchingUser = await User.findOne({ email }).select('+password');
     if (!matchingUser) {
-      return res
-        .status(HTTP_CODES.UNAUTHORIZED)
-        .send({ mesage: 'Неправильны почта или пароль' });
+      return next(new ValidationError('Переданы некорректные данные'));
     }
 
     const isSame = await bcrypt.compare(password, matchingUser.password);
 
     if (!isSame) {
-      return res
-        .status(HTTP_CODES.UNAUTHORIZED)
-        .send({ mesage: 'Неправильны почта или пароль' });
+      return next(new ValidationError('Переданы некорректные данные'));
     }
 
     const token = jwt.sign(
@@ -172,5 +186,5 @@ async function login(req, res, next) {
 }
 
 module.exports = {
-  getAllUsers, getUserById, createNewUser, updateProfile, updateAvatar, login,
+  getAllUsers, getUserById, createNewUser, updateProfile, updateAvatar, login, getCurrentUser,
 };

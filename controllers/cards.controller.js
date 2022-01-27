@@ -5,17 +5,14 @@ const ForbiddenError = require('../errors/forbidden-error');
 const NotFoundError = require('../errors/not-found-error');
 const ValidationError = require('../errors/validation-error');
 
-async function getAllCards(req, res) {
-  const { _id } = req.user;
+async function getAllCards(req, res, next) {
   try {
-    const cards = await Card.find({ owner: _id });
+    const cards = await Card.find();
     return res
       .status(HTTP_CODES.SUCCESS_CODE)
       .json(cards);
   } catch (e) {
-    return res
-      .status(HTTP_CODES.SERVER_ERROR_CODE)
-      .send({ message: 'Ошибка сервера' });
+    return next(e);
   }
 }
 
@@ -31,9 +28,7 @@ async function createNewCard(req, res, next) {
     if (e.name === 'CastError' || e.name === 'ValidationError') {
       return next(new ValidationError('Переданы некорректные данные'));
     }
-    return res
-      .status(HTTP_CODES.SERVER_ERROR_CODE)
-      .send({ message: 'Ошибка сервера' });
+    return next(e);
   }
 }
 

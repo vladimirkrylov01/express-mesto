@@ -6,8 +6,7 @@ const { errors } = require('celebrate');
 const helmet = require('helmet');
 require('dotenv').config();
 
-const rootRouter = require('./routes');
-
+const rootRouter = require('./routes/index');
 const { authorize } = require('./middlewares/auth.middleware');
 const { errorsHandler } = require('./middlewares/errors.middleware');
 
@@ -16,7 +15,7 @@ const NotFoundError = require('./errors/not-found-error');
 
 const { PORT = 3000 } = process.env;
 
-const { login, createNewUser } = require('./controllers/users');
+const { login, createNewUser } = require('./controllers/users.conroller');
 
 const app = express();
 const DB_NAME = 'mestodb';
@@ -37,10 +36,11 @@ app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.json());
-app.use('/', rootRouter);
 
 app.use('/signin', loginUserValidation, login);
 app.use('/signup', newUserValidation, createNewUser);
+
+app.use('/', rootRouter);
 
 app.use(authorize);
 
