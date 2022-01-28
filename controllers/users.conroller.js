@@ -6,6 +6,7 @@ const TOKEN_SECRET = require('../utils/secret');
 const ConflictError = require('../errors/conflict-error');
 const NotFoundError = require('../errors/not-found-error');
 const ValidationError = require('../errors/validation-error');
+const UnauthorizedError = require('../errors/unauthorized-error');
 
 async function getAllUsers(req, res, next) {
   try {
@@ -148,13 +149,13 @@ async function login(req, res, next) {
   try {
     const matchingUser = await User.findOne({ email }).select('+password');
     if (!matchingUser) {
-      return next(new ValidationError('Переданы некорректные данные'));
+      return next(new UnauthorizedError('Переданы некорректные данные'));
     }
 
     const isSame = await bcrypt.compare(password, matchingUser.password);
 
     if (!isSame) {
-      return next(new ValidationError('Переданы некорректные данные'));
+      return next(new UnauthorizedError('Переданы некорректные данные'));
     }
 
     const token = jwt.sign(
@@ -179,7 +180,7 @@ async function login(req, res, next) {
       });
   } catch (e) {
     if (e.name === 'ValidationError') {
-      return next(new ValidationError('Переданы некорректные данные'));
+      return next(new UnauthorizedError('Переданы некорректные данные'));
     }
     return next(e);
   }

@@ -40,9 +40,9 @@ app.use(express.json());
 app.use('/signin', loginUserValidation, login);
 app.use('/signup', newUserValidation, createNewUser);
 
-app.use('/', rootRouter);
-
 app.use(authorize);
+
+app.use('/', rootRouter);
 
 app.use((req, res, next) => next(new NotFoundError('Неверный запрос')));
 
