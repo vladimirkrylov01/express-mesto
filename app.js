@@ -17,7 +17,8 @@ const { newUserValidation, loginUserValidation } = require('./utils/validation-r
 const NotFoundError = require('./errors/not-found-error');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { logout } = require('./controllers/logout.controller');
-const corsHandler = require('./middlewares/cors.middleware');
+// const corsHandler = require('./middlewares/cors.middleware');
+const cors = require('cors');
 
 mongoose.connect('mongodb://localhost:27017/mestodb')
   .then(() => console.log('Connected to Database'))
@@ -27,7 +28,18 @@ const app = express();
 
 const { PORT = 3000 } = process.env;
 
-app.use(corsHandler)
+// app.use(corsHandler)
+app.use(cors({
+  origin:[
+    'https://krylov.students.nomoredomains.work',
+    'http://krylov.students.nomoredomains.work',
+    'https://api.krylov.students.nomoredomains.work',
+    'http://api.krylov.students.nomoredomains.work',
+    'localhost:3000',
+    'http://178.154.222.15'
+  ],
+  credentials:true,
+}))
 
 app.use(helmet());
 app.use(express.json());
