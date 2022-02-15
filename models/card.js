@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { validationUrl } = require("../middlewares/validation");
+const validator = require('validator');
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -12,8 +12,10 @@ const cardSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: validationUrl,
-      message: 'Поле link не прошло валидацию',
+      validator(v) {
+        return validator.isURL(v, { require_protocol: true });
+      },
+      message: (props) => `${props.value} не является ссылкой`,
     },
   },
   owner: {
@@ -22,12 +24,15 @@ const cardSchema = new mongoose.Schema({
     required: true,
   },
   likes: {
-    type: [mongoose.Schema.Types.ObjectId],
-    default: [],
+    type: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'user',
+    }],
+    // default: [],
   },
   createdAt: {
-    type: mongoose.Schema.Types.Date,
-    default: Date.now,
+    type: Date,
+    default: Date.now(),
   },
 });
 
