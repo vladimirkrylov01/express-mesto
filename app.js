@@ -35,7 +35,7 @@ app.use(
       'http://krylov.students.nomoredomains.work',
       'https://krylov.students.nomoredomains.work',
     ],
-    methods: ['GET', 'PUT', 'POST', 'DELETE'],
+    methods: ['GET','HEAD', 'PUT','PATCH', 'POST', 'DELETE'],
     allowedHeaders: ['Authorization', 'Content-Type'],
     credentials: true,
   }),
