@@ -140,7 +140,6 @@ const login = (req, res, next) => {
   if (!email || !password) {
     throw new BadRequestError('Email и пароль не могут быть пустыми.');
   }
-
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
@@ -149,6 +148,7 @@ const login = (req, res, next) => {
       // отправим токен, браузер сохранит его в куках
       res
         .cookie('jwt', token, {
+          maxAge:36000,
           httpOnly: true,
           sameSite: 'none',
           secure: true,

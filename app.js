@@ -1,4 +1,3 @@
-// eslint-disable-next-line linebreak-style
 const express = require('express');
 const helmet = require('helmet');
 const mongoose = require('mongoose');
@@ -23,7 +22,6 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
 });
-
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: true,
   useNewUrlParser: true,
