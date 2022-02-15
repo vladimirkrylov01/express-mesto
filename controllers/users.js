@@ -150,7 +150,8 @@ const login = (req, res, next) => {
       res
         .cookie('jwt', token, {
           httpOnly: true,
-          sameSite: true,
+          sameSite: 'none',
+          secure: true,
         })
         .send({ token });
     })
@@ -158,6 +159,15 @@ const login = (req, res, next) => {
       throw new UnauthorizedError('Необходимо авторизоваться.');
     })
     .catch(next);
+};
+
+const signOut = (req, res) => {
+  res.clearCookie('jwt', {
+    httpOnly: true,
+    sameSite: 'none',
+    secure: true,
+  })
+    .status(200).send({ message: 'Куки почищены.' });
 };
 
 module.exports = {
@@ -168,4 +178,5 @@ module.exports = {
   updateAvatar,
   login,
   getCurrentUser,
+  signOut,
 };
