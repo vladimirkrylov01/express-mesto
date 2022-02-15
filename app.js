@@ -1,43 +1,38 @@
-/* eslint-disable object-curly-spacing */
 require('dotenv').config();
 const express = require('express');
+const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
-const { celebrate, Joi, errors } = require('celebrate');
-
-const cors = require('cors');
-const router = require('./routes');
-const auth = require('./middlewares/auth');
-const centralizedErrors = require('./middlewares/centralizedErrors');
-
-const { isValidUrl } = require('./utils/methods');
+const { errors } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const { createUser, login } = require('./controllers/users');
+const { login, createUser } = require('./controllers/users');
+const auth = require('./middlewares/auth');
+const errorHandler = require('./middlewares/error-handler');
+const NotFoundError = require("./errors/NotFoundError");
+const {
+  validationLogin,
+  validationUser,
+} = require('./middlewares/validation');
+const cors = require('./middlewares/cors');
 
-const { PORT } = process.env || 3000;
+const { PORT = 3000 } = process.env;
+
 const app = express();
+mongoose.connect('mongodb://localhost:27017/mestodb', {
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useFindAndModify: false,
+}, (err) => {
+  if (err) { console.log(err); }
+});
 
-mongoose.connect('mongodb://localhost:27017/mestodb');
+console.log(cors);
 
-app.use(
-  '*',
-  cors({
-    origin: [
-      'https://krylov.students.nomoredomains.work',
-      'http://krylov.students.nomoredomains.work',
-      'localhost:3000',
-    ],
-    methods: ['OPTIONS', 'GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-    allowedHeaders: ['Content-Type', 'origin', 'Authorization', 'Cookie'],
-    exposedHeaders: ['Set-Cookie'],
-    credentials: true,
-  }),
-);
+app.use(cors);
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(express.json());
 
 app.use(requestLogger);
 
@@ -47,50 +42,22 @@ app.get('/crash-test', () => {
   }, 0);
 });
 
-const newLocal = '^[a-zA-Z0-9]{8,}$';
-app.post(
-  '/signup',
-  celebrate({
-    body: Joi.object().keys({
-      name: Joi.string().default('Жак-Ив Кусто').min(2).max(30),
-      about: Joi.string().default('Исследователь').min(2).max(30),
-      avatar: Joi.string().custom(isValidUrl),
-      email: Joi.string().required().email(),
-      password: Joi.string().required().pattern(new RegExp(newLocal)),
-    }),
-  }),
-  createUser,
-);
+app.post('/signin', validationLogin, login);
+app.post('/signup', validationUser, createUser);
+app.use(auth);
+app.use('/users', require('./routes/users'));
+app.use('/cards', require('./routes/cards'));
 
-app.post(
-  '/signin',
-  celebrate({
-    body: Joi.object().keys({
-      email: Joi.string().required().email(),
-      password: Joi.string().required().pattern(new RegExp(newLocal)),
-    }),
-  }),
-  login,
-);
-
-app.get('/logout', (req, res, next) => {
-  res
-    .clearCookie('jwt', {
-      secure: true,
-      sameSite: 'none',
-      domain: 'krylov.students.nomoredomains.work',
-    })
-    .send({ message: 'Выход совершен успешно' });
-  next();
+app.use('*', () => {
+  throw new NotFoundError('Запрашиваемый ресурс не найден');
 });
 
-app.use(auth);
-
-app.use(router);
-app.use(errors());
 app.use(errorLogger);
 
-app.use(centralizedErrors);
+app.use(errors());
+
+app.use(errorHandler);
+
 app.listen(PORT, () => {
-  console.log(`Запуск на порту ${PORT}`);
+  console.log(`Application is running on port ${PORT}`);
 });
