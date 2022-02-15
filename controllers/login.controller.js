@@ -5,7 +5,6 @@ const User = require('../models/user');
 const TOKEN_SECRET = require('../utils/secret');
 const UnauthorizedError = require('../errors/unauthorized-error');
 const ValidationError = require('../errors/validation-error');
-const NotFoundErxror = require("../errors/not-found-error");
 
 async function login(req, res, next) {
   const { email, password } = req.body;

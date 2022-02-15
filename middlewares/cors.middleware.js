@@ -2,6 +2,8 @@ const allowedCors = [
   'http://localhost:3000',
   'http://krylov.students.nomoredomains.work',
   'https://krylov.students.nomoredomains.work',
+  'http://api.krylov.students.nomoredomains.work',
+  'https://api.krylov.students.nomoredomains.work',
 ];
 
 const corsHandler = (req, res, next) => {

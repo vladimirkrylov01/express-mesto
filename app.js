@@ -7,7 +7,7 @@ require('dotenv').config();
 
 const usersRouter = require('./routes/users.router');
 const cardsRouter = require('./routes/cards.router');
-
+const cors = require('cors');
 const { authorize } = require('./middlewares/auth.middleware');
 const { errorsHandler } = require('./middlewares/errors.miggleware');
 const { createNewUser } = require('./controllers/users.controller');
@@ -17,7 +17,7 @@ const { newUserValidation, loginUserValidation } = require('./utils/validation-r
 const NotFoundError = require('./errors/not-found-error');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { logout } = require('./controllers/logout.controller');
-const corsHandler = require('./middlewares/cors.middleware');
+// const corsHandler = require('./middlewares/cors.middleware');
 // const cors = require('cors');
 
 mongoose.connect('mongodb://localhost:27017/mestodb')
@@ -28,18 +28,8 @@ const app = express();
 
 const { PORT = 3000 } = process.env;
 
-app.use(corsHandler)
-// app.use(cors({
-//   origin:[
-//     'https://krylov.students.nomoredomains.work',
-//     'http://krylov.students.nomoredomains.work',
-//     'https://api.krylov.students.nomoredomains.work',
-//     'http://api.krylov.students.nomoredomains.work',
-//     'localhost:3000',
-//     'http://178.154.222.15'
-//   ],
-//   credentials:true,
-// }))
+
+
 
 app.use(helmet());
 app.use(express.json());
@@ -51,7 +41,18 @@ app.get('/crash-test', () => {
     throw new Error('Сервер сейчас упадёт');
   }, 0);
 });
-
+// app.use(corsHandler)
+app.use(cors({
+  origin:[
+    'https://krylov.students.nomoredomains.work',
+    'http://krylov.students.nomoredomains.work',
+    'https://api.krylov.students.nomoredomains.work',
+    'http://api.krylov.students.nomoredomains.work',
+    'localhost:3000',
+    'http://178.154.222.15'
+  ],
+  credentials:true,
+}))
 app.use('/signin', loginUserValidation, login);
 app.use('/signup', newUserValidation, createNewUser);
 
