@@ -1,12 +1,10 @@
 const allowedCors = [
   'http://localhost:3000',
-  'http://krylov.students.nomoredomains.work',
   'https://krylov.students.nomoredomains.work',
-  'http://api.krylov.students.nomoredomains.work',
-  'https://api.krylov.students.nomoredomains.work',
+  'http://krylov.students.nomoredomains.work',
 ];
 
-const corsHandler = (req, res, next) => {
+const cors = (req, res, next) => {
   const { origin } = req.headers;
   // Сохраняем источник запроса в переменную origin
   // проверяем, что источник запроса есть среди разрешённых
@@ -23,11 +21,10 @@ const corsHandler = (req, res, next) => {
     res.header('Access-Control-Allow-Methods', DEFAULT_ALLOWED_METHODS);
     res.header('Access-Control-Allow-Headers', requestHeaders);
     // завершаем обработку запроса и возвращаем результат клиенту
-    res.end();
-    return
+    return res.end();
   }
 
   return next();
 };
 
-module.exports = corsHandler;
+module.exports = cors;
