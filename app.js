@@ -37,7 +37,6 @@ app.get('/crash-test', () => {
     throw new Error('Сервер сейчас упадёт');
   }, 0);
 });
-app.use(corsHandler)
 // app.use(cors({
 //   origin:[
 //     'https://krylov.students.nomoredomains.work',
@@ -49,6 +48,7 @@ app.use(corsHandler)
 //   ],
 //   credentials:true,
 // }))
+app.use(corsHandler)
 app.use('/signin', loginUserValidation, login);
 app.use('/signup', newUserValidation, createNewUser);
 
